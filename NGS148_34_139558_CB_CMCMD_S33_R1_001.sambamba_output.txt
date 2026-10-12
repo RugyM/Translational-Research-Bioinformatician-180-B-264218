@@ -1,4 +1,4 @@
-#chromosome	StartPosition EndPosition	FullPosition NotUsed	NotUsed	GeneSymbol;Accession	Size	readCount	meanCoverage	percentage30	sampleName
+#chromosome	StartPosition   EndPosition	FullPosition NotUsed	NotUsed	GeneSymbol;Accession	Size	readCount	meanCoverage	percentage30	sampleName
 1	26126711	26126914	1-26126711-26126914	0	+	SELENON;NM_020451.2	57190	142	39.5222	49.2611	1
 1	26127523	26127661	1-26127523-26127661	0	+	SELENON;NM_020451.2	57190	5748	3501.21	100	1
 1	26128496	26128618	1-26128496-26128618	0	+	SELENON;NM_020451.2	57190	2637	1105.45	100	1
