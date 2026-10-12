@@ -5,9 +5,7 @@ from collections import Counter
 from pathlib import Path
 import argparse
 
-parser = argparse.ArgumentParser(
-    description="Summarise Sambamba exon coverage by gene."
-)
+parser = argparse.ArgumentParser(description="Summarise Sambamba exon coverage by gene.")
 
 parser.add_argument("-i", "--input",     required=True, help="Input Sambamba file")
 parser.add_argument("-g", "--genelist", required=True, help="Panel gene list (one gene per line)")
@@ -15,7 +13,6 @@ parser.add_argument("-t", "--threshold", required=False, type=float, default=100
 parser.add_argument("-o", "--output",    required=False, default="sample.output.txt",        help="Output report filename")
 parser.add_argument("-m", "--missing",   required=False, default="sample_missing_genes.txt", help="Missing genes output filename (default: sample_missing_genes.txt)")
 args = parser.parse_args()
-
 
 input_file = args.input
 
@@ -39,7 +36,7 @@ df = df.dropna(subset=["GeneSymbol"])
 
 
 
-# Convert coverage to numeric
+# coverage to numeric
 df["percentage30"] = pd.to_numeric(df["percentage30"],errors="coerce")
 
 invalid_rows = df[df["percentage30"].isna()]
@@ -48,10 +45,9 @@ for _, row in invalid_rows.iterrows():
 
 df = df.dropna(subset=["percentage30"])
 
-# Identify failing exons
+# failing exons
 MIN_PERCENTAGE30 = args.threshold
 df["Failing"] = df["percentage30"] < MIN_PERCENTAGE30
-
 
 '''
 From README:
@@ -74,20 +70,13 @@ df["ExonRegion"] = (df["chromosome"].astype(str) + ":"+df["StartPosition"].astyp
 
 worst_indices = (df.groupby(["sampleName", "GeneSymbol"])["percentage30"].idxmin())
 worst_exons = df.loc[worst_indices,["sampleName", "GeneSymbol", "ExonRegion"]]
-
-gene_df = gene_df.merge(
-    worst_exons,
-    on=["sampleName", "GeneSymbol"],
-    how="left"
-)
+gene_df = gene_df.merge(worst_exons,on=["sampleName", "GeneSymbol"],how="left")
 
 gene_df["Status"] = "PASS"
 gene_df.loc[gene_df["FailingExons"] > 0,"Status"] = "FAIL"
 
 
-failing_genes = gene_df[gene_df["Status"] == "FAIL"].copy()
-
-
+failing_genes = gene_df[gene_df["Status"] == "FAIL"]
 failing_genes = failing_genes.rename(columns={
     "MinCoverage": "MinCoverage%",
     "ExonRegion": "WorstExon(chr:start-end)"
@@ -121,14 +110,12 @@ for sample, sample_genes in gene_df.groupby("sampleName"):
     with open(sample_dir / "failing_positions.txt", "w") as f:
         for gene, exons in failing_exons.groupby("GeneSymbol"):
             f.write(f"{gene}\n")
-            
             for region in exons["ExonRegion"]:
                 f.write(f"{region}\n")
             f.write("\n")
 
 
     sample_failures = failing_genes[failing_genes["sampleName"] == sample]
-
     # write gene coverage report
     sample_failures[report_columns].to_csv(
         sample_dir / Path(args.output).name,
@@ -155,10 +142,10 @@ for sample, sample_genes in gene_df.groupby("sampleName"):
 Part B: Q9
 I use minimum aggregation here - any exon below the coverage threshold results 
 in the gene failing the coverage requirement. Weighted mean can allow small exons
-with < threshold coverage to be masked by larger exons with good coverage, resulting 
+with < threshold coverage to be masked by larger exons with required coverage, resulting 
 in a gene passing the coverage requirement.
 
 Diagnostically, clinically significant variants may be in small exons with coverage below
-threshold, and these would be missed if a gene is reported as passing coverage requirements. 
+threshold, and these may be missed if a gene is reported as passing coverage requirements. 
 """
 
